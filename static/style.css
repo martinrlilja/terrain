@@ -1,0 +1,34 @@
+body {
+  font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen-Sans,Ubuntu,Cantarell,"Helvetica Neue",sans-serif;
+}
+
+#preview canvas {
+  width: 100%;
+  height: 100%;
+}
+
+.content {
+  width: 100%;
+  max-width: 50rem;
+  margin: 2rem auto 4rem;
+}
+
+.controls {
+  display: flex;
+  justify-content: space-between;
+}
+
+.controls__actions {
+  order: 1;
+}
+
+.controls__input {}
+
+.controls__input label {
+  font-size: 0.8rem;
+  display: block;
+}
+
+.controls__input input {
+  display: block;
+}

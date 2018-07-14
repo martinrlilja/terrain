@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Terrain generator</title>
+    <link rel="stylesheet" href="style.css">
+  </head>
+  <body>
+    <div class="content">
+      <h1>Terrain generator</h1>
+      <p>
+      Procedural terrain generation based on
+      <a href="https://arches.liris.cnrs.fr/publications/articles/SIGGRAPH2013_PCG_Terrain.pdf">
+        this paper (PDF)
+      </a>
+      </p>
+      <p>
+      You need a browser that supports WebAssembly and WebGL to see the examples.
+      </p>
+
+      <div id="terrain-preview"></div>
+      <div id="slope-map-editor"></div>
+
+      <div class="controls">
+        <div class="controls__actions">
+          <button id="action-start-stop">Start/Stop</button>
+          <button id="action-regenerate">Regenerate</button>
+          <pre id="terrain-stats"></pre>
+        </div>
+        <div class="controls__input">
+          <label for="setting-river-growth">
+            Probability of river segement growing
+          </label>
+          <input type="range" id="setting-river-growth" min="0" max="1" step="0.01" value="0.2">
+
+          <label for="setting-river-symmetric">
+            Probability of river segement splitting symmetrically
+          </label>
+          <input type="range" id="setting-river-symmetric" min="0" max="1" step="0.01" value="0.7">
+
+          <label for="setting-river-asymmetric">
+            Probability of river segement splitting asymmetrically
+          </label>
+          <input type="range" id="setting-river-asymmetric" min="0" max="1" step="0.01" value="0.1">
+        </div>
+      </div>
+      <details id="editor-terrain-contour">
+        <summary>Terrain contour</summary>
+      </details>
+      <details id="editor-river-slope-map">
+        <summary>River slope map</summary>
+      </details>
+    </div>
+
+    <script src="terrain-wasm.js"></script>
+    <script src="js/three.js"></script>
+    <script src="js/script.js"></script>
+  </body>
+</html>
