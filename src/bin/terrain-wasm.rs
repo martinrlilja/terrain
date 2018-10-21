@@ -1,22 +1,28 @@
-#![feature(proc_macro)]
-
 extern crate serde;
 #[macro_use]
 extern crate serde_derive;
-#[macro_use]
-extern crate stdweb;
-extern crate terrain;
+
 extern crate nalgebra as na;
 extern crate petgraph;
 extern crate rand;
+#[cfg_attr(
+    all(target_arch = "wasm32", target_os = "unknown"),
+    macro_use
+)]
+extern crate stdweb;
+extern crate terrain;
 
+#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
 use stdweb::js_export;
 
 use na::{Point2, Point3};
 use petgraph::stable_graph::StableGraph;
 use rand::prelude::*;
-use rand::rngs::{SmallRng, OsRng};
-use terrain::{ArraySlopeMap, RiverGen, RiverGenSettings, RiverNode};
+use rand::rngs::SmallRng;
+use terrain::{
+    river_gen::RiverGen, river_gen::RiverGenSettings, river_gen::RiverNode,
+    slope_map::ArraySlopeMap,
+};
 
 // x min = 45
 // x max = 640
@@ -24,7 +30,7 @@ use terrain::{ArraySlopeMap, RiverGen, RiverGenSettings, RiverNode};
 // y min = 215
 // y max = 640
 // dy = 425
-const CONTOUR: &[(f32, f32)] = &[
+const CONTOUR: &[(f64, f64)] = &[
     (77.142857, 363.79078),
     (134.28572, 306.64792),
     (222.85715, 283.79078),
@@ -51,13 +57,13 @@ const CONTOUR: &[(f32, f32)] = &[
     (45.714286, 426.64792),
 ];
 
-const SCALE: f32 = 100.0;
+const SCALE: f64 = 100.0;
 
 fn main() {}
 
 #[derive(Deserialize)]
 struct InitialRiverNodes {
-    pos: (f32, f32),
+    pos: (f64, f64),
     priority: u32,
 }
 
@@ -66,19 +72,33 @@ struct RiverGeneratorSettings {
     initial_river_nodes: Vec<InitialRiverNodes>,
 }
 
-#[js_export]
-fn get_contour() -> Vec<f32> {
-    CONTOUR.iter().cloned().flat_map(|(x, y)| vec![x * SCALE, y * SCALE]).collect()
+#[cfg_attr(
+    all(target_arch = "wasm32", target_os = "unknown"),
+    js_export
+)]
+pub fn get_contour() -> Vec<f64> {
+    CONTOUR
+        .iter()
+        .cloned()
+        .flat_map(|(x, y)| vec![x * SCALE, y * SCALE])
+        .collect()
 }
 
-#[js_export]
-fn generate_river(
-    prob_growth: f64, prob_symmetric: f64, prob_asymetric: f64,
-    slope_map: Vec<f64>, contour: Vec<f64>) -> Vec<f32> {
+#[cfg_attr(
+    all(target_arch = "wasm32", target_os = "unknown"),
+    js_export
+)]
+pub fn generate_river(
+    prob_growth: f64,
+    prob_symmetric: f64,
+    prob_asymetric: f64,
+    slope_map: Vec<f64>,
+    contour: Vec<f64>,
+) -> Vec<f64> {
     let contour = contour
         .as_slice()
         .chunks(2)
-        .map(|c| Point2::new(c[0] as f32, c[1] as f32))
+        .map(|c| Point2::new(c[0] as f64, c[1] as f64))
         .collect();
 
     let mut graph = StableGraph::new();
@@ -106,28 +126,42 @@ fn generate_river(
     let settings = RiverGenSettings {
         height_range: 2.0,
 
-        prob_growth: prob_growth as f32,
-        prob_symmetric: prob_symmetric as f32,
-        prob_asymetric: prob_asymetric as f32,
+        prob_growth: prob_growth as f64,
+        prob_symmetric: prob_symmetric as f64,
+        prob_asymetric: prob_asymetric as f64,
 
         edge_length: 2000.0,
         edge_margin: 1500.0,
     };
 
     let slope_map_size = (slope_map.len() as f64).sqrt().round() as usize;
-    let slope_map = slope_map.iter().map(|&x| x as f32).collect();
-    let slope_map = ArraySlopeMap::new(slope_map, slope_map_size, na::Vector2::new(45.0, 215.0), 595.0 * SCALE);
+    let slope_map = slope_map.iter().map(|&x| x as f64).collect();
+    let slope_map = ArraySlopeMap::new(
+        slope_map,
+        slope_map_size,
+        na::Vector2::new(45.0, 215.0),
+        595.0 * SCALE,
+    );
 
-    let mut gen = RiverGen::new(SmallRng::from_entropy(), slope_map, contour, graph, settings);
+    let mut gen = RiverGen::new(
+        SmallRng::from_entropy(),
+        slope_map,
+        contour,
+        graph,
+        settings,
+    );
     gen.grow_network();
 
-    let river_data = gen.graph.edge_indices().flat_map(|edge_idx| {
-        let (a_idx, b_idx) = gen.graph.edge_endpoints(edge_idx).unwrap();
-        let a = &gen.graph[a_idx];
-        let b = &gen.graph[b_idx];
+    let river_data = gen
+        .graph
+        .edge_indices()
+        .flat_map(|edge_idx| {
+            let (a_idx, b_idx) = gen.graph.edge_endpoints(edge_idx).unwrap();
+            let a = &gen.graph[a_idx];
+            let b = &gen.graph[b_idx];
 
-        vec![a.pos.x, a.pos.y, a.pos.z, b.pos.x, b.pos.y, b.pos.z]
-    }).collect();
+            vec![a.pos.x, a.pos.y, a.pos.z, b.pos.x, b.pos.y, b.pos.z]
+        }).collect();
 
     river_data
 }

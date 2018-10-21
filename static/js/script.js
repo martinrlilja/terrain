@@ -228,7 +228,7 @@ class ContourEditor {
       const x = (e.offsetX - offset) / this.scale;
       const y = (e.offsetY - offset) / this.scale;
 
-      const active_distance = Math.pow(10 / this.scale, 2);
+      const active_distance = Math.pow(20 / this.scale, 2);
 
       let is_dirty = false;
 
@@ -261,7 +261,9 @@ class ContourEditor {
     });
 
     this.canvas.addEventListener('mousedown', () => {
-      this.is_dragging = true;
+      if (this.node_selected !== null) {
+        this.is_dragging = true;
+      }
     });
 
     window.addEventListener('mouseup', () => {
@@ -321,12 +323,14 @@ const default_slope_map = [0.012,0.021,0.019,0.027,0.027,0.029,0.023,0.018,0.019
 //   0,1, 0,0.9, 0,0.8, 0,0.7, 0,0.6, 0,0.5, 0,0.4, 0,0.3, 0,0.2, 0,0.1
 // ].map((x) => x * 1e5 - 5e4);
 
-const default_terrain_contour = [
-  0,0, 0.2,0, 0.4,0, 0.6,0, 0.8,0,
-  1,0, 1,0.2, 1,0.4, 1,0.6, 1,0.8,
-  1,1, 0.8,1, 0.6,1, 0.4,1, 0.2,1,
-  0,1, 0,0.8, 0,0.6, 0,0.4, 0,0.2
-].map((x) => x * 1e5 - 5e4);
+// const default_terrain_contour = [
+//   0,0, 0.2,0, 0.4,0, 0.6,0, 0.8,0,
+//   1,0, 1,0.2, 1,0.4, 1,0.6, 1,0.8,
+//   1,1, 0.8,1, 0.6,1, 0.4,1, 0.2,1,
+//   0,1, 0,0.8, 0,0.6, 0,0.4, 0,0.2
+// ].map((x) => x * 1e5 - 5e4);
+
+const default_terrain_contour = [-24475, -13200, -15675, -22825, -1375, -26675, 7975, -26675, 17875, -21450, 28325, -22275, 37675, -15400, 40975, -5500, 35750, 4675, 36300, 16500, 45100, 25575, 42075, 34650, 28600, 41250, 15125, 37125, 2750, 27500, -11275, 20075, -26950, 21175, -37675, 15400, -42075, 3575, -36850, -6875];
 
 (async function() {
 
